@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Para Papá</title>
+<style>
+  :root{
+    --pink:#ff6b6b; --deep:#b33;
+    --bg1:#0f2027; --bg2:#203a43;
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family: "Poppins",sans-serif;
+    background: linear-gradient(135deg,var(--bg1),var(--bg2));
+    min-height:100vh;
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+  }
+
+  .stage{
+    width:100%;
+    max-width:900px;
+    background:rgba(255,255,255,0.03);
+    border-radius:20px;
+    padding:25px;
+    box-shadow:0 12px 40px rgba(0,0,0,0.5);
+    position:relative;
+    overflow:hidden;
+  }
+
+  #confetti{
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    z-index:5;
+  }
+
+  /* === SOBRE ARREGLADO === */
+  .envelope{
+    position:absolute;
+    left:50%;
+    transform:translateX(-50%);
+    top:10px;
+    width:160px;
+    height:110px;
+    background:#ffffff;
+    border-radius:12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow:0 10px 35px rgba(0,0,0,0.5);
+    cursor:pointer;
+    z-index:6;
+    transition:opacity .7s ease;
+    overflow:hidden;
+  }
+
+  .envelope .flap{
+    position:absolute;
+    width:100%;
+    height:60%;
+    background:#ffd5d5;
+    top:0;
+    border-radius:12px 12px 0 0;
+    transform-origin:top;
+    transition:transform .9s ease;
+  }
+
+  .envelope.open .flap{
+    transform:translateY(-100%) rotateX(180deg);
+  }
+  .envelope.open{
+    opacity:0;
+  }
+
+  .logo{
+    font-size:1.2rem;
+    margin-bottom:20px;
+    text-align:center;
+  }
+
+  .card{
+    display:none;
+    text-align:center;
+  }
+
+  .photo{
+    width:300px;
+    height:300px;
+    border-radius:16px;
+    object-fit:cover;
+    border:5px solid rgba(255,255,255,0.12);
+    box-shadow:0 10px 30px rgba(0,0,0,0.45);
+    margin-bottom:18px;
+  }
+
+  h1{
+    margin:0;
+    font-size:2rem;
+  }
+
+  .lead{
+    opacity:0.9;
+    font-size:1rem;
+    margin:10px 0 20px;
+  }
+
+  .typewriter{
+    min-height:90px;
+    white-space:pre-wrap;
+    margin-bottom:20px;
+  }
+
+  .btn{
+    padding:12px 22px;
+    border:none;
+    border-radius:10px;
+    font-size:1rem;
+    font-weight:600;
+    color:#fff;
+    background:var(--pink);
+    cursor:pointer;
+    transition:.3s;
+  }
+  .btn:hover{
+    transform:scale(1.05);
+    background:#ff4a4a;
+  }
+
+  @media(max-width:700px){
+    .photo{
+      width:240px;height:240px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="stage" id="stage">
+
+  <canvas id="confetti"></canvas>
+
+  <!-- Sobre -->
+  <div class="envelope" id="envelope">
+    <div class="flap"></div>
+    <strong style="color:#b33">Para Papá</strong>
+  </div>
+
+  <div class="logo">Carta para Papá ❤️</div>
+
+  <div class="card">
+    <img src="img/papa.jpeg" class="photo" alt="Papá">
+
+    <h1>Te quiero mucho, papá</h1>
+    <p class="lead">Gracias por cada esfuerzo, cada consejo y por estar siempre allí.</p>
+
+    <div class="typewriter" id="typewriter"></div>
+
+    <button class="btn" id="btn-accept">Aceptar abrazo 🤗</button>
+  </div>
+
+  <audio id="bgAudio" loop>
+    <source src="music/musica.mp3" type="audio/mp3">
+  </audio>
+
+</div>
+
+<script>
+const envelope = document.getElementById('envelope');
+const flap = envelope.querySelector('.flap');
+const typeEl = document.getElementById('typewriter');
+const card = document.querySelector('.card');
+const bgAudio = document.getElementById('bgAudio');
+
+// texto de la carta
+const text = 
+"Papá,\nGracias por tu apoyo, tu ejemplo y por enseñarme a ser fuerte y seguir adelante. Hoy te dedico esta pequeña carta con mucho cariño.\nAtte: Jherlin ❤️";
+
+let i = 0;
+function typeWriter(){
+  if(i < text.length){
+    typeEl.textContent += text.charAt(i);
+    i++;
+    setTimeout(typeWriter,35);
+  }
+}
+
+// confetti
+const canvas = document.getElementById('confetti');
+const ctx = canvas.getContext('2d');
+let W = canvas.width = window.innerWidth;
+let H = canvas.height = window.innerHeight;
+window.addEventListener('resize', ()=>{ W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; });
+
+function random(min,max){ return Math.random()*(max-min)+min; }
+function confetti(){
+  const pieces=[];
+  for(let i=0;i<80;i++){
+    pieces.push({
+      x: random(0,W),
+      y: random(-H,0),
+      size: random(6,12),
+      xs: random(-1,1),
+      ys: random(2,5),
+      color:`hsl(${Math.random()*360} 90% 70%)`,
+      rot: random(0,360),
+      drot: random(-6,6)
+    });
+  }
+  let t=0;
+  function loop(){
+    ctx.clearRect(0,0,W,H);
+    for(const p of pieces){
+      p.x+=p.xs; p.y+=p.ys; p.rot+=p.drot;
+      ctx.save();
+      ctx.translate(p.x,p.y);
+      ctx.rotate(p.rot*Math.PI/180);
+      ctx.fillStyle=p.color;
+      ctx.fillRect(-p.size/2,-p.size/2,p.size,p.size*0.6);
+      ctx.restore();
+    }
+    t++;
+    if(t<300) requestAnimationFrame(loop);
+  }
+  loop();
+}
+
+// === ABRIR CARTA (SOBRE NUEVO) ===
+envelope.addEventListener('click', async ()=>{
+  envelope.classList.add("open");
+
+  setTimeout(()=>{
+    envelope.style.display='none';
+    
+    card.style.display='block';
+    typeWriter();
+    confetti();
+  },900);
+
+  try{ await bgAudio.play(); }catch(e){}
+});
+
+// botón
+document.getElementById('btn-accept')
+  .addEventListener('click',()=>alert("Gracias papá 🤗"));
+</script>
+
+</body>
+</html>
